@@ -139,10 +139,10 @@ class PsaAuctionPrices:
     def download_card_image(self, url):
         print(f'downloading {url}')
 
+    # TODO: use cert to get image from PSA 
     def get_image(self, sale):
         if "ImageURL" in sale:
             url = sale["ImageURL"]
-            print(f'getting image {url}')
             url_hash = hashlib.md5(url.encode("utf-8")).hexdigest()
             img_data = requests.get(url).content
             file_name = f'data/{self.card_name}_images/image_{url_hash}.jpg'
