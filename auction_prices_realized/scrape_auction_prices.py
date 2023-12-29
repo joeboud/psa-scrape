@@ -7,6 +7,7 @@ import time
 import math
 import pandas as pd
 import requests
+from datetime import datetime
 
 PAGE_MAX = 250
 SCRAPE_URL = "https://www.psacard.com/auctionprices/GetItemLots"
@@ -17,7 +18,7 @@ class PsaAuctionPrices:
         self.card_url = card_url
     
     def scrape(self):
-        print("collecting data for {}".format(self.card_url))
+        print(f"{datetime.now().time()}: collecting data for {self.card_url}")
 
         # Pull the card ID off the input url
         try:
