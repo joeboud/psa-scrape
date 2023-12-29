@@ -8,6 +8,7 @@ import math
 import pandas as pd
 import requests
 from datetime import datetime
+import hashlib
 
 PAGE_MAX = 250
 SCRAPE_URL = "https://www.psacard.com/auctionprices/GetItemLots"
@@ -16,6 +17,7 @@ EXAMPLE_URL = "https://www.psacard.com/auctionprices/baseball-cards/1967-topps/m
 class PsaAuctionPrices:
     def __init__(self, card_url):
         self.card_url = card_url
+        self.card_name = self.card_url.split("-cards/")[1].split("/values")[0].replace("/", "-")
     
     def scrape(self):
         print(f"{datetime.now().time()}: collecting data for {self.card_url}")
@@ -57,6 +59,7 @@ class PsaAuctionPrices:
                 json_data = self.post_to_url(sess, form_data)
                 sales += json_data["data"]
 
+        img_name = []
         images = []
         a_urls = []
         prices = []
@@ -71,6 +74,9 @@ class PsaAuctionPrices:
 
         # Iterate over each sale, pull data elements from each sale
         for sale in sales:
+            # Get image name
+            img_name.append(self.get_image(sale))
+
             # Get image url
             images.append(self.get_image_url(sale))
 
@@ -106,6 +112,7 @@ class PsaAuctionPrices:
         
         # Create a dataframe
         df = pd.DataFrame({
+            "image_name": img_name,
             "date": dates, 
             "grade": grades, 
             "qualifier": quals, 
@@ -128,6 +135,22 @@ class PsaAuctionPrices:
         json_data = r.json()
         time.sleep(3)
         return json_data
+    
+    def download_card_image(self, url):
+        print(f'downloading {url}')
+
+    def get_image(self, sale):
+        if "ImageURL" in sale:
+            url = sale["ImageURL"]
+            print(f'getting image {url}')
+            url_hash = hashlib.md5(url.encode("utf-8")).hexdigest()
+            img_data = requests.get(url).content
+            file_name = f'data/{self.card_name}_images/image_{url_hash}.jpg'
+            os.makedirs(os.path.dirname(file_name), exist_ok=True)
+            with open(file_name, 'wb') as handler:
+                handler.write(img_data)
+            return 'image_' + url_hash
+        return math.nan
 
     def get_image_url(self, sale):
         if "ImageURL" in sale:
@@ -197,8 +220,7 @@ class PsaAuctionPrices:
         return math.nan
     
     def get_file_name(self):
-        f_name = self.card_url.split("-cards/")[1].split("/values")[0].replace("/", "-")
-        return "{}.csv".format(os.path.join("data", f_name))
+        return "{}.csv".format(os.path.join("data", self.card_name))
 
 
 
