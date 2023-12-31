@@ -9,6 +9,7 @@ import pandas as pd
 import requests
 from datetime import datetime
 import hashlib
+from scrape_cert import PsaCert
 
 PAGE_MAX = 250
 SCRAPE_URL = "https://www.psacard.com/auctionprices/GetItemLots"
@@ -144,8 +145,9 @@ class PsaAuctionPrices:
         if "ImageURL" in sale:
             url = sale["ImageURL"]
             url_hash = hashlib.md5(url.encode("utf-8")).hexdigest()
-            img_data = requests.get(url).content
             file_name = f'data/{self.card_name}_images/image_{url_hash}.jpg'
+
+            img_data = requests.get(url).content
             os.makedirs(os.path.dirname(file_name), exist_ok=True)
             with open(file_name, 'wb') as handler:
                 handler.write(img_data)
@@ -216,7 +218,15 @@ class PsaAuctionPrices:
 
     def get_psa_cert(self, sale):
         if "CertNo" in sale:
-            return sale["CertNo"]
+            certnum = sale["CertNo"]
+            print(f'cert no {certnum} found')
+            # move to directory for current card
+            rootdir = os.getcwd()
+            os.chdir(f'data\\{self.card_name}_images')
+            cert_scraper = PsaCert(certnum)
+            cert_scraper.get_image()
+            os.chdir(rootdir)
+            return certnum
         return math.nan
     
     def get_file_name(self):
