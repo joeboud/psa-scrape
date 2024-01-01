@@ -148,9 +148,11 @@ class PsaAuctionPrices:
             file_name = f'data/{self.card_name}_images/image_{url_hash}.jpg'
 
             img_data = requests.get(url).content
-            os.makedirs(os.path.dirname(file_name), exist_ok=True)
-            with open(file_name, 'wb') as handler:
-                handler.write(img_data)
+            if len(img_data) > 1000:
+                print(f'img size: { len(img_data)}')
+                os.makedirs(os.path.dirname(file_name), exist_ok=True)
+                with open(file_name, 'wb') as handler:
+                    handler.write(img_data)
             return 'image_' + url_hash
         return math.nan
 
