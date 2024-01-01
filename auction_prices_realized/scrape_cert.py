@@ -38,7 +38,7 @@ class PsaCert:
         
         # selenium config
         options = Options()
-        options.headless = True
+        options.add_argument('--headless=new')
         self.driver = webdriver.Chrome(options=options)
         self.driver.get(self.card_url)
 
