@@ -23,7 +23,7 @@ class PsaAuctionPrices:
         self.url_components = re.search(url_pattern, self.card_url).groupdict()
         self.card_name = '-'.join([self.url_components[key] for key in ['series','item_name']])
         print(f'{datetime.now().time()}: Processing card {self.card_name}')
-        
+
         self.card_data_dir = f'data/{self.card_name}_images/'
         os.makedirs(os.path.dirname(self.card_data_dir), exist_ok=True)
     
@@ -136,7 +136,7 @@ class PsaAuctionPrices:
         })
         
         # Write to csv
-        df.to_csv(self.get_file_name(), index = False)
+        df.to_csv(self.get_file_name(), index = False, mode='a')
 
     def post_to_url(self, session, form_data):
         r = session.post(SCRAPE_URL, data=form_data)
@@ -238,7 +238,8 @@ class PsaAuctionPrices:
         return math.nan
     
     def get_file_name(self):
-        return "{}.csv".format(os.path.join("data", self.card_name))
+        return 'all_card_data.csv'
+        #return "{}.csv".format(os.path.join("data", self.card_name))
 
 
 
