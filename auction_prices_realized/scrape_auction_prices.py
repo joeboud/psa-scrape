@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import sys
 import time
 import math
@@ -16,13 +17,20 @@ SCRAPE_URL = "https://www.psacard.com/auctionprices/GetItemLots"
 EXAMPLE_URL = "https://www.psacard.com/auctionprices/baseball-cards/1967-topps/mets-rookies/values/187370"
 
 class PsaAuctionPrices:
-    def __init__(self, card_url):
-        self.card_url = card_url
-        self.card_name = self.card_url.split("-cards/")[1].split("/values")[0].replace("/", "-")
+    def __init__(self, raw_card_url):
+        self.card_url = raw_card_url.replace('/summary/','/values/')
+        url_pattern = r'(?P<base>https://www\.psacard\.com/auctionprices)/(?P<category>.*)/(?P<series>.*)/(?P<item_name>.*)/values/(?P<item_number>.*)'
+        self.url_components = re.search(url_pattern, self.card_url).groupdict()
+        self.card_name = '-'.join([self.url_components[key] for key in ['series','item_name']])
+        print(f'{datetime.now().time()}: Processing card {self.card_name}')
+        
+        self.card_data_dir = f'data/{self.card_name}_images/'
+        os.makedirs(os.path.dirname(self.card_data_dir), exist_ok=True)
     
     def scrape(self):
         print(f"{datetime.now().time()}: collecting data for {self.card_url}")
 
+        
         # Pull the card ID off the input url
         try:
             card_id = int(self.card_url.split("/")[-1])
@@ -145,12 +153,10 @@ class PsaAuctionPrices:
         if "ImageURL" in sale:
             url = sale["ImageURL"]
             url_hash = hashlib.md5(url.encode("utf-8")).hexdigest()
-            file_name = f'data/{self.card_name}_images/image_{url_hash}.jpg'
+            file_name = os.path.join(self.card_data_dir,f'image_{url_hash}.jpg')
 
             img_data = requests.get(url).content
             if len(img_data) > 1000:
-                print(f'img size: { len(img_data)}')
-                os.makedirs(os.path.dirname(file_name), exist_ok=True)
                 with open(file_name, 'wb') as handler:
                     handler.write(img_data)
             return 'image_' + url_hash
