@@ -135,6 +135,12 @@ class PsaAuctionPrices:
             "img_url": images
         })
         
+        # set single value fields
+        df['card_name'] = self.card_name
+        df['card_id'] = self.url_components['card_id']
+        df['series'] = self.url_components['series']
+        df['category'] = self.url_components['category']
+
         # Write to csv
         df.to_csv(self.get_file_name(), index = False, mode='a')
 
