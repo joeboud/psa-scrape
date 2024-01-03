@@ -80,6 +80,7 @@ class PsaAuctionPrices:
         sellers = []
         sale_types = []
         certs = []
+        cert_imgs = []
 
         # Iterate over each sale, pull data elements from each sale
         for sale in sales:
@@ -118,10 +119,14 @@ class PsaAuctionPrices:
 
             # Get PSA certification number
             certs.append(self.get_psa_cert(sale))
+
+            # Get PSA certification image_name
+            cert_imgs.append(f'cert_{self.get_psa_cert(sale)}.jpg')
         
         # Create a dataframe
         df = pd.DataFrame({
             "image_name": img_name,
+            "cert_image_name": cert_imgs,
             "date": dates, 
             "grade": grades, 
             "qualifier": quals, 
@@ -137,12 +142,12 @@ class PsaAuctionPrices:
         
         # set single value fields
         df['card_name'] = self.card_name
-        df['card_id'] = self.url_components['card_id']
+        df['card_item_number'] = self.url_components['item_number']
         df['series'] = self.url_components['series']
         df['category'] = self.url_components['category']
 
         # Write to csv
-        df.to_csv(self.get_file_name(), index = False, mode='a')
+        df.to_csv(self.get_file_name(), index = False, mode='a', header = False)
 
     def post_to_url(self, session, form_data):
         r = session.post(SCRAPE_URL, data=form_data)
@@ -244,7 +249,7 @@ class PsaAuctionPrices:
         return math.nan
     
     def get_file_name(self):
-        return 'all_card_data.csv'
+        return 'data/all_card_data.csv'
         #return "{}.csv".format(os.path.join("data", self.card_name))
 
 
